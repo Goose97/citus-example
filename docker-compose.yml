@@ -1,0 +1,56 @@
+version: "2.1"
+services:
+  db:
+    restart: always
+    image: 'citusdata/citus:8.3.1'
+    container_name: 'citus-master'
+    ports: ['5533:5432']
+    env_file: .dev.env
+    volumes:
+      - ./docker/data/citusdata:/data
+    environment:
+      PGDATA: /data
+      POSTGRES_USER: example
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: example_db
+      PGUSER: example
+      PGPASSWORD: 123456
+      PGSSLMODE: disable
+    networks:
+      - default
+  db-worker-1:
+    restart: always
+    image: 'citusdata/citus:8.3.1'
+    container_name: 'citus-worker-1'
+    ports: ['5534:5432']
+    env_file: .dev.env
+    volumes:
+      - ./docker/data/citusworker1:/data
+    environment:
+      PGDATA: /data
+      POSTGRES_USER: example
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: example_db
+      PGUSER: example
+      PGPASSWORD: 123456
+      PGSSLMODE: disable
+    networks:
+      - default
+  db-worker-2:
+    restart: always
+    image: 'citusdata/citus:8.3.1'
+    container_name: 'citus-worker-2'
+    ports: ['5535:5432']
+    volumes:
+      - ./docker/data/citusworker2:/data
+    env_file: .dev.env
+    environment:
+      PGDATA: /data
+      POSTGRES_USER: example
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: example_db
+      PGUSER: example
+      PGPASSWORD: 123456
+      PGSSLMODE: disable
+    networks:
+      - default

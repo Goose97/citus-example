@@ -1,0 +1,48 @@
+CREATE TABLE one (
+   id integer,
+   name varchar(40),
+	 shard_key integer
+);
+ALTER TABLE one ADD PRIMARY KEY (id, shard_key);
+
+CREATE TABLE many (
+   id integer,
+   name varchar(40),
+   foreign_key integer,
+	 shard_key integer
+);
+ALTER TABLE many ADD PRIMARY KEY (id, shard_key);
+
+SELECT * from master_add_node('db-worker-1', 5432);
+SELECT * from master_add_node('db-worker-2', 5432);
+SELECT * FROM master_get_active_worker_nodes();
+SELECT create_distributed_table('one', 'shard_key');
+SELECT create_distributed_table('many', 'shard_key', colocate_with => 'one');
+
+SELECT * from one
+JOIN many
+ON one.id = many.foreign_key and one.shard_key = many.shard_key;
+
+INSERT INTO one (id, name, shard_key)
+VALUES (1, 'Record A', 100);
+INSERT INTO one (id, name, shard_key)
+VALUES (2, 'Record B', 200);
+INSERT INTO one (id, name, shard_key)
+VALUES (3, 'Record C', 300);
+INSERT INTO one (id, name, shard_key)
+VALUES (4, 'Record D', 400);
+
+INSERT INTO one (id, name, foreign_key, shard_key)
+VALUES (1, 'Belong to record A', 1, 100);
+INSERT INTO one (id, name, foreign_key, shard_key)
+VALUES (2, 'Also belong to record A', 1, 100);
+
+INSERT INTO one (id, name, foreign_key, shard_key)
+VALUES (3, 'Belong to record B', 2, 200);
+INSERT INTO one (id, name, foreign_key, shard_key)
+VALUES (4, 'Also belong to record B', 2, 200);
+
+INSERT INTO one (id, name, foreign_key, shard_key)
+VALUES (3, 'Belong to record B', 3, 300);
+INSERT INTO one (id, name, foreign_key, shard_key)
+VALUES (4, 'Also belong to record B', 3, 300);
